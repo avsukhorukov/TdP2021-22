@@ -1,4 +1,4 @@
-program main
+program hello_world
     implicit none
     print *, "Hello, brave new world!"
-end program main
+end program hello_world
