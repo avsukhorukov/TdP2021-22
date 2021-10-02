@@ -1,0 +1,15 @@
+10
+   0  51  84  54  14  62  76  82  87  45 ! Madrid
+  51   0  25  60  14  68  69  40  58  74 ! Barcelona
+  72  25   0  35  57  82  41  25  57  22 ! Valencia
+  54  44  69   0  69  40  31  97  29  43 ! Seville
+  14  14  57  70   0  76  67  72  28  46 ! Zaragoza
+  82  40  82  40  71   0  47  50  34  39 ! Malaga
+  65  69  37  31  59  47   0  16  37  10 ! Murcia
+  60  36  46  45  56  65  16   0  34  78 ! Palma
+  87  56  47  47  23  37  37  26   0  42 ! Bilbao
+ 110  65  11  38  59  38   9 103  47   0 ! Alicante
+ Mad Bar Val Sev Zar Mal Mur Pal Bil Ali
+
+On my HP Probook 430 G1 it takes 3 minutes with full optimiation and 16 minutes
+with no optimization.
