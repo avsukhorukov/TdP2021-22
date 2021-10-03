@@ -1,0 +1,9 @@
+1.0e-4                ! integration step tau, in years         Solar System Test
+5.0e-2                ! time lap, in years
+10.00                 ! total integration time, in years
+5                     ! number of bodies
+1.0000e+00   0.0000e+00  0.0000e+00    0.0000e+00   0.0000e+00 ! Sun
+1.6500e-07   0.3870e+00  0.0000e+00    0.0000e+00   1.6075e+00 ! Mercury
+2.4470e-06   0.7200e+00  0.0000e+00    0.0000e+00   1.1785e+00 ! Venus
+3.0020e-06   1.0000e+00  0.0000e+00    0.0000e+00   1.0000e+00 ! Earth
+3.2100e-07   1.5240e+00  0.0000e+00    0.0000e+00   0.8100e+00 ! Mars

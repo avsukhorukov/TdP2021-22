@@ -1,0 +1,6 @@
+1.0e-4                ! time step                                   2-body orbit
+1.0e-1                ! time lap
+20.00                 ! total integration time
+2                     ! number of bodies
+1.0e+00   0.0e+00  0.0e+00  -0.297301779   0.297301779
+1.0e+00   2.0e+00  2.0e+00   0.297301779  -0.297301779
