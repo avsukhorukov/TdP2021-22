@@ -1,11 +1,21 @@
+! Power function using recursion
+!
+! An integer base \( b > 0 \) can be raised to an integer power \( p > 0 \)
+! using a simple recurrence relation,
+! \[
+!   b^p = b \cdot b^{p - 1}.
+! \]
+! The base case is \( b^0 = 1 \).
+!
+! TODO: try to incorporate case p < 0 with divisions for real numbers.
 program main
     implicit none
     integer :: n, m, ans
     print "(a)", "Numbers n and m are "
     read *, n, m
     print "(a, i0)", "n^m is ", power_f(n, m)
-    !call power_s(n, m, ans)
-    !print "(a, i0)", "n^m is ", ans
+    call power_s(n, m, ans)
+    print "(a, i0)", "n^m is ", ans
 contains
     recursive function power_f(b, p) result(answer)
         integer             :: answer

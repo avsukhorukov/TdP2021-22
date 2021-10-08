@@ -1,0 +1,11 @@
+The board size is 
+.Q..
+...Q
+Q...
+..Q.
+
+..Q.
+Q...
+...Q
+.Q..
+

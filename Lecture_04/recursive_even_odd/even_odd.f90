@@ -1,6 +1,6 @@
 program main
     implicit none
-    integer :: n, ans
+    integer :: n
     print "(a)", "Numbers n is "
     read *, n
     if (is_even(n)) then
