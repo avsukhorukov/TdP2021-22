@@ -27,7 +27,7 @@ program singly_linked_list
     ! integer(kind=4) and pointer (8 b) components are aligned to 8-byte words.
 
     ! Use Valgrind to show memory leaks.
-    ! --- What happends if we just deallocate the head?
+    ! --- What happens if we just deallocate the head?
     deallocate(head%next%next)
     deallocate(head%next)
     deallocate(head)

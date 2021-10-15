@@ -1,6 +1,6 @@
 ! This implements class functionality of a LIFO stack with a singly-linked list,
 ! that stores one integer and has a single pointer to the next node.
-module lifo_stack
+module lifo_stack_class
     implicit none
     private
 
@@ -12,23 +12,23 @@ module lifo_stack
     type, public :: a_stack
         type(a_sll_node), pointer :: head => null()
     contains
-        procedure, public :: init    => sll_init
-        procedure, public :: push    => sll_push
-        procedure, public :: pop     => sll_pop
-        procedure, public :: display => sll_display
-        final             :: sll_destroy
+        procedure, public :: init    => stack_init
+        procedure, public :: push    => stack_push
+        procedure, public :: pop     => stack_pop
+        procedure, public :: display => stack_display
+        final             :: stack_destroy
     end type a_stack
 
 contains
 
-    subroutine sll_init(self)
+    subroutine stack_init(self)
         class(a_stack), intent(inout) :: self
         self%head => null()
         return
-    end subroutine sll_init
+    end subroutine stack_init
 
     ! Push the given value into the new node at the head of the stack.
-    subroutine sll_push(self, val)
+    subroutine stack_push(self, val)
         class(a_stack), intent(inout) :: self
         integer,        intent(in)    :: val
         !
@@ -39,34 +39,30 @@ contains
         temp%next => self%head
         self%head => temp
         return
-    end subroutine sll_push
+    end subroutine stack_push
 
-    logical function sll_is_empty(self)
+    logical function stack_is_empty(self)
         class(a_stack), intent(in) :: self
         !
-        sll_is_empty = .not.associated(self%head)
+        stack_is_empty = .not.associated(self%head)
         return
-    end function sll_is_empty
+    end function stack_is_empty
 
-    integer function sll_pop(self, is_empty)
+    ! Popping from an empty stack is an error. Before popping, check for the
+    ! emptiness using the stack_is_empty() method.
+    integer function stack_pop(self)
         class(a_stack), intent(inout) :: self
-        logical,        intent(out)   :: is_empty
         !
         type(a_sll_node), pointer :: temp
         !
-        if (sll_is_empty(self)) then
-            is_empty = .true.
-        else
-            is_empty = .false.
-            temp      => self%head
-            self%head => self%head%next
-            sll_pop = temp%val
-            deallocate(temp)
-        end if
+        temp      => self%head
+        self%head => self%head%next
+        stack_pop = temp%val
+        deallocate(temp)
         return
-    end function sll_pop
+    end function stack_pop
 
-    subroutine sll_display(self)
+    subroutine stack_display(self)
         class(a_stack), intent(in) :: self
         !
         type(a_sll_node), pointer :: temp
@@ -78,18 +74,18 @@ contains
         end do
         print "(a)", "null()"
         return
-    end subroutine sll_display
+    end subroutine stack_display
 
     ! Destructor in case you forget to pop all nodes from the list.
-    subroutine sll_destroy(self)
+    subroutine stack_destroy(self)
         type(a_stack), intent(inout) :: self
         integer :: val
-        logical :: is_empty
+        !
         do
-            val = sll_pop(self, is_empty)
-            if (is_empty) exit
+            if (stack_is_empty(self)) exit
+            val = stack_pop(self)
         end do
         return
-    end subroutine sll_destroy
+    end subroutine stack_destroy
 
-end module lifo_stack
+end module lifo_stack_class

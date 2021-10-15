@@ -54,13 +54,13 @@ program singly_linked_list_2
     ! more didactic as one deallocates not the head pointer but the temporary
     ! one.
     ! Method 1:
-    ! - the temporary pointer remembers the next element;
-    ! - deallocate the first pointer;
-    ! - point the first pointer to the temporary pointer.
+    ! - the temporary pointer remembers the next node;
+    ! - deallocate the head pointer;
+    ! - point the head pointer to the temporary pointer.
     ! Method 2:
     ! - the temporary pointer remembers the head;
-    ! - point the head to the next element;
-    ! - deallocate the temporary pointer (the 1st element).
+    ! - point the head to the next node;
+    ! - deallocate the temporary pointer (the 1st node).
     do while (associated(head))
         temp => head
         head => head%next

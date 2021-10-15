@@ -1,13 +1,12 @@
 ! This module implements some basic functionality for a singly-linked list that
 ! is managed with the head and tail pointers to emulate a FIFO queue.  The
 ! following methods, a typical minimum of a FIFO queue, are provided:
-! - sll_init (nullify both pointers);
-! - sll_is_empty (test for null head);
-! - sll_put (append to the tail);
-! - sll_get (remove from the head);
-! - sll_display (walk and print values).
-! methods are given: put (append to the tail) and get (remove from the tail).
-module sllists
+! - queue_init (nullify both pointers);
+! - queue_is_empty (test for null head);
+! - queue_put (append to the tail);
+! - queue_get (remove from the head);
+! - queue_display (walk and print values).
+module fifo_queue_mod
     implicit none
 
     type :: a_sll_node
@@ -17,19 +16,19 @@ module sllists
 
 contains
 
-    subroutine sll_init(head, tail)
+    subroutine queue_init(head, tail)
         type(a_sll_node), pointer, intent(inout) :: head, tail
         head => null()
         tail => null()
         return
-    end subroutine sll_init
+    end subroutine queue_init
 
-    ! Test if the list is empty.
-    logical function sll_is_empty(head, tail)
+    ! Test if the queue is empty.
+    logical function queue_is_empty(head, tail)
         type(a_sll_node), pointer, intent(in) :: head, tail
-        sll_is_empty = .not.associated(head)
+        queue_is_empty = .not.associated(head)
         return
-    end function sll_is_empty
+    end function queue_is_empty
 
     ! Put a new node to the tail of the list.  The head and tail pointers to the
     ! list are needed to avoid walking through the entire list from its head as
@@ -40,7 +39,7 @@ contains
     ! 2) The list is empty, so tail%next doesn't exist and tail is null.
     !    Allocate a new node, set the value, nullify the next component, point
     !    head to it, point tail to it.
-    subroutine sll_put(head, tail, val)
+    subroutine queue_put(head, tail, val)
         type(a_sll_node), pointer, intent(inout) :: head, tail
         integer,                   intent(in)    :: val
         type(a_sll_node), pointer :: temp
@@ -64,18 +63,16 @@ contains
         !     tail => head
         ! end if
         ! tail%val = val
-        ! tail%next => null()
         return
-    end subroutine sll_put
+    end subroutine queue_put
 
     ! Walk through the list and print the stored values.  Same as in
     ! singly_linked_list_2:
     ! 1) point the temp pointer to the head;
     ! 2) advance the temp pointer to temp%next until temp is null();
     ! 3) while moving, print the value of the current node.
-    subroutine sll_display(head, tail)
+    subroutine queue_display(head, tail)
         type(a_sll_node), pointer, intent(in) :: head, tail
-        type(a_sll_node), pointer :: temp
 
         temp => head
         do while (associated(temp))
@@ -84,29 +81,24 @@ contains
         end do
         print "(a)", "null()"
         return
-    end subroutine sll_display
+    end subroutine queue_display
 
     ! Get the first node of the head and return its value.  Same as in
     ! singly_linked_list_2.  Use the second method:
     ! - the temporary pointer remembers the head;
     ! - point the head to the next element;
     ! - deallocate the temporary pointer (the 1st element).
-    integer function sll_get(head, tail, is_empty) ! returns val
+    integer function queue_get(head, tail) ! returns val
         type(a_sll_node), pointer, intent(inout) :: head, tail
-        logical,                   intent(out)   :: is_empty
         type(a_sll_node), pointer :: temp
 
-        if (sll_is_empty(head, tail)) then
-            is_empty = .true.
-            tail => null()
-        else
-            is_empty = .false.
-            sll_get = head%val ! return value
-            temp => head
-            head => head%next
-            deallocate(temp)
-        end if
+        queue_get = head%val ! return value
+        temp => head
+        head => head%next
+        deallocate(temp)
+        ! if the head is empty, so the tail must be too
+        if (.not.associated(head)) tail => null() 
         return
-    end function sll_get
+    end function queue_get
 
-end module sllists
+end module fifo_queue_mod

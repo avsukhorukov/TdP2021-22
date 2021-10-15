@@ -12,28 +12,27 @@
 ! In this example we code everything in a separate module.  An example of
 ! compilation:
 !
-!   $ gfortran ... singly_linked_list_3.f90 slists.f90
+!   $ gfortran ... singly_linked_list_3.f90 fifo_queue_mod.f90
 !
 program singly_linked_list_3
-    use :: sllists
+    use :: fifo_queue_mod
     implicit none
     integer :: iostatus, val
     type(a_sll_node), pointer :: head, tail
-    logical :: is_empty
 
-    call sll_init(head, tail)
+    call queue_init(head, tail)
     do
         read(*, *, iostat=iostatus) val
         if (iostatus /= 0) exit
-        call sll_put(head, tail, val) ! append to the tail
+        call queue_put(head, tail, val) ! append to the tail
     end do
 
-    call sll_display(head, tail)
+    call queue_display(head, tail)
 
     ! Destroy the list (delete all elements) by getting its all its nodes from
     ! the until the list is empty.
     do
-        val = sll_get(head, tail, is_empty)
-        if (is_empty) exit
+        if (queue_is_empty(head, tail)) exit
+        val = queue_get(head, tail)
     end do
 end program singly_linked_list_3
