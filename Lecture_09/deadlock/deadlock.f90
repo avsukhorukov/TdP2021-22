@@ -8,8 +8,8 @@
 program deadlock
     use mpi_f08
     implicit none
-    integer, parameter :: N = 10
     integer :: my_rank, n_ranks, first, last, tag
+    integer, parameter   :: N = 40
     integer, allocatable :: a(:), b(:)
     type(MPI_Status) :: status
 

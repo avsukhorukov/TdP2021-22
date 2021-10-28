@@ -1,5 +1,15 @@
-! Try first with 2 processes, then with 3 or more.
-program main
+! Update one interger `i` at the first rank and send it to the last rank in a
+! standard send-receive pair.
+!
+! Compile:
+!
+!   $ mpifort -g -O0 -Wall -Wextra -Wpedantic -fcheck=all -fbacktrace \
+!     send_recv.f90
+!
+! Run with 2 processes (-np 2), then with 3 or more:
+!
+!   $ mpirun -np 2 --oversubscribe ./a.out
+program send_recv
     use mpi_f08
     implicit none
     integer :: my_rank, n_ranks, first, last
@@ -25,4 +35,4 @@ program main
     print "(2(a, i0))", "After:  rank=", my_rank, ", i=", i
 
     call MPI_Finalize()
-end program main
+end program send_recv
