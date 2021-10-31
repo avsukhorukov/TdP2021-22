@@ -2,23 +2,21 @@
 !
 !   previous_rank -> my_rank -> next_rank.
 !
-! The standard MPI_Send/MPI_Recv buffers the message if its size is < 4040 b.
-! The total size of the envelope is around 4 kb.  When the limit is exceeded,
-! the standard MPI_Send/MPI_Recv becomes a synchronous MPI_Ssend/MPI_Recv.
+! The standard mode MPI_Send and MPI_Recv have the message buffered if its size
+! is < 4040 byte.  When this eager limit is exceeded, then the buffered mode is
+! replaced with the synchronous one.
 !
-! The symmetry can be broken by flipping the order of send-recv in one of the
-! ranks (e.g., last n_ranks - 1).  This serializes the communication---the
-! messages are sent backwards from the last rank to the first one, then the last
-! one sends its message back to rank 0.  This is not a full parallelism.
+! The symmetry can be broken by flipping the order of send---receive in one of
+! the ranks, say, last (n_ranks - 1).  This serializes the communication:
+! messages are sent backward from the last rank to the first one by one
+! send--receive pair per time step, until the last rank can send to the first
+! rank.  This solution is not parall.
 !
-! It is better to flip the order in every other rank to get a semi-parallel
-! solution.  If the communicator's size is even, then ever ranks send and odd
-! ranks receive, next odd ranks send and even receive.  If the communicator's
-! size is odd, then the last rank waits until the second step as it has to send
-! to a receive in rank 0, which is only called after a send.
-!
-! For a single process a blocking MPI_Send will wait for a blocking MPI_Recv in
-! the same process and will not succed.
+! It is better to flip the order of send---receive in every other rank to get
+! the so-called ``bucket brigade'' parallelizm.  If the number of processes is
+! even, then even ranks send and odd ranks receive, next odd ranks send and even
+! receive.  If the number of processes is odd, then there will be the third step
+! when the last rank receives from the one before last.
 program ring
     use mpi_f08
     implicit none
@@ -108,10 +106,9 @@ contains
 
     ! Use the modulo division to get the corresponding rank in the ring topology
     ! with `n` processes.
-    function get_rank(i, n) result(rank)
-        integer :: rank
-        integer :: i, n
-        rank = modulo(i, n)
+    integer function get_rank(rnk, n)
+        integer, intent(in) :: rnk, n
+        get_rank = modulo(rnk, n)
         return
     end function get_rank
 
