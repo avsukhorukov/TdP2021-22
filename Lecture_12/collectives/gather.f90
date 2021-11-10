@@ -2,7 +2,7 @@
 program gather
     use mpi_f08
     implicit none
-    integer :: my_rank, n_ranks, root, s, i, count
+    integer :: my_rank, n_ranks, root, r_size, s_size, i
     type(MPI_Comm) :: comm
     integer, allocatable :: rbuf(:), sbuf(:)
 
@@ -13,23 +13,23 @@ program gather
 
     root = 0
 
-    ! Read size `s` in on rank 0 and create rbuf(s) on root, and rbuf(0) on
-    ! other ranks.
-    s = 0
-    if (my_rank == root) read *, s
-    allocate(rbuf(s), source=0)
+    ! Read in size `r_size` at rank 0 and create rbuf(r_size) at root, and
+    ! rbuf(0) at the other ranks.
+    r_size = 0
+    if (my_rank == root) read *, r_size
+    allocate(rbuf(r_size), source=0)
 
-    ! Broadcast `s` to create sbuf(s / n) on each rank.
-    call MPI_Bcast(s, 1, MPI_INTEGER, 0, comm)
+    ! Broadcast `r_size` to create sbuf(r_size / n_ranks) at each rank.
+    call MPI_Bcast(r_size, 1, MPI_INTEGER, 0, comm)
 
-    count = s / n_ranks
-    allocate(sbuf(count))
-    sbuf(:) = [ (10 * my_rank + i, i = 1, count) ]
+    s_size = r_size / n_ranks
+    allocate(sbuf(s_size))
+    sbuf(:) = [ (10 * my_rank + i, i = 1, s_size) ]
 
     call print_barrier()
 
-    call MPI_Gather(sbuf, count, MPI_INTEGER, &
-                    rbuf, count, MPI_INTEGER, root, comm)
+    call MPI_Gather(sbuf, s_size, MPI_INTEGER, &
+                    rbuf, s_size, MPI_INTEGER, root, comm)
 
     call print_barrier()
 
@@ -37,26 +37,28 @@ program gather
     if (allocated(rbuf)) deallocate(rbuf)
 
     call MPI_Finalize()
+
 contains
 
     !---------------------------------------------------------------------------
     subroutine print_barrier()
         implicit none
-        integer :: r
+        integer :: rank
 
-        do r = 0, n_ranks - 1
-            if (r == my_rank) then
-                print '(a, i0, a, *(i2, 1x))', "Rank ", r, ", sbuf(:)=", sbuf
+        do rank = 0, n_ranks - 1
+            if (rank == my_rank) then
+                print "(a, i0, a, *(i2, 1x))", "Rank ", rank, ", sbuf(:)=", sbuf
             end if
             call MPI_Barrier(comm)
         end do
-        do r = 0, n_ranks - 1
-            if (r == my_rank) then
-                print '(a, i0, a, *(i2, 1x))', "Rank ", r, ", rbuf(:)=", rbuf
+        do rank = 0, n_ranks - 1
+            if (rank == my_rank) then
+                print "(a, i0, a, *(i2, 1x))", "Rank ", rank, ", rbuf(:)=", rbuf
             end if
             call MPI_Barrier(comm)
         end do
         if (my_rank == 0) print *
     end subroutine print_barrier
+    !---------------------------------------------------------------------------
 
 end program gather

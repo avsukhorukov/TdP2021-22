@@ -1,37 +1,32 @@
-! Run with -np 5 and enter s_size=10.
-program scatter
+! Run with -np 5
+! Enter 5 or 10
+program allgather
     use mpi_f08
     implicit none
-    integer :: my_rank, n_ranks, root, s_size, r_size, i
     type(MPI_Comm) :: comm
+    integer :: my_rank, n_ranks, s, i, count
     integer, allocatable :: rbuf(:), sbuf(:)
 
     call MPI_Init()
     comm = MPI_COMM_WORLD
-    call MPI_Comm_rank(comm, my_rank)
     call MPI_Comm_size(comm, n_ranks)
+    call MPI_Comm_rank(comm, my_rank)
 
-    root = 0
+    ! s is the size of the receive buffer.
+    if (my_rank == 0) read *, s
+    call MPI_Bcast(s, 1, MPI_INTEGER, 0, comm)
+    allocate(rbuf(s), source=0)
 
-    ! Allocate the send buffer `sbuf` of size `s_size` only at rank 0 to scatter
-    ! it to the other ranks.
-    s_size = 0
-    if (my_rank == root) read *, s_size
-    allocate(sbuf(s_size))
-    if (my_rank == root) sbuf(:) = [ (i, i = 1, s_size) ]
+    ! s / n is the size of the send buffer.
+    count = s / n_ranks
+    allocate(sbuf(count))
+    sbuf(:) = [ (10 * my_rank + i, i = 1, count) ]
 
-    ! Broadcast the array size and create the receive buffer `sbuf` of size
-    ! r_size = s / n.  Initialize it to 0 at all ranks.
-    call MPI_Bcast(s_size, 1, MPI_INTEGER, root, comm)
-    r_size = s_size / n_ranks
-    allocate(rbuf(r_size), source=0)
+    call print_vals()
 
-    call print_barrier()
+    call MPI_Allgather(sbuf, count, MPI_INTEGER, rbuf, count, MPI_INTEGER, comm)
 
-    call MPI_Scatter(sbuf, r_size, MPI_INTEGER, &
-                     rbuf, r_size, MPI_INTEGER, root, comm)
-
-    call print_barrier()
+    call print_vals()
 
     if (allocated(sbuf)) deallocate(sbuf)
     if (allocated(rbuf)) deallocate(rbuf)
@@ -41,7 +36,7 @@ program scatter
 contains
 
     !---------------------------------------------------------------------------
-    subroutine print_barrier()
+    subroutine print_vals()
         integer :: rank
 
         if (my_rank == 0) print *
@@ -57,7 +52,7 @@ contains
             end if
             call MPI_Barrier(comm)
         end do
-    end subroutine print_barrier
+    end subroutine print_vals
     !---------------------------------------------------------------------------
 
-end program scatter
+end program allgather

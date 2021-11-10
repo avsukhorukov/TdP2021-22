@@ -38,7 +38,7 @@ program barrier
     call print_p2p(a, my_rank, n_ranks, comm)
 
     if (my_rank == 0) then
-        a(:) = [ (10 * my_rank + i, i = 1, a_size) ]
+        a(:) = [ (i, i = 1, a_size) ]
     end if
 
     call print_p2p(a, my_rank, n_ranks, comm)
@@ -90,5 +90,6 @@ contains
         if (my_id == 0) print *
         return
     end subroutine print_barrier
+    !---------------------------------------------------------------------------
 
 end program barrier

@@ -26,22 +26,22 @@ program broadcast
 
     ! Size s must be zero at ranks but 0, where it is read from the terminal.
     a_size = 0
-    !call print_barrier()
+    call print_barrier()
 
     if (my_rank == root) read *, a_size
-    !call print_barrier()
+    call print_barrier()
 
     call MPI_Bcast(a_size, 1, MPI_INTEGER, root, comm)
-    !call print_barrier()
+    call print_barrier()
 
     allocate(a(a_size), source=0)
     if (my_rank == root) then
         a(:) = [ (i, i = 1, a_size) ]
     end if
-    call print_barrier()
+    !call print_barrier()
 
     call MPI_Bcast(a, a_size, MPI_INTEGER, root, comm) ! try a(2), count=2 and so on.
-    call print_barrier()
+    !call print_barrier()
 
     if (allocated(a)) deallocate(a)
     call MPI_Finalize()
@@ -55,13 +55,15 @@ contains
         do r = 0, n_ranks - 1
             if (r == my_rank) then
                 ! 1st: print `a_size` only
-                !print '(a, i0, a, i0)', "Rank ", r, ", a_size=", a_size
+                print "(a, i0, a, i0)", "Rank ", r, ", a_size=", a_size
                 ! 2nd: print `a(:)` only.
-                print '(a, i0, a, *(i2, 1x))', "Rank ", r, ", a(:)=", a
+                !print "(a, i0, a, *(i2, 1x))", "Rank ", r, ", a(:)=", a
             end if
             call MPI_Barrier(comm)
         end do
         if (my_rank == 0) print *
+        return
     end subroutine print_barrier
+    !---------------------------------------------------------------------------
 
 end program broadcast
