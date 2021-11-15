@@ -4,12 +4,13 @@
 ! that each process has a local portion of this matrix.  Initialize such a
 ! portion with the process rank.  N is not necessarily divisible by P.  Each
 ! process sends its first and last columns (in Fortran) to neighbors: first to
-! the left rank, last to the right rank.  Each process must allocate extra ghost
-! cells with two columns.
+! the left rank, last to the right rank.  Each process must allocate two extra
+! colums with ghost cells.
 !
 ! Compile and run:
 !
-!     $ mpifort -g -O0 -Wall -Wextra -Wpedantic -fcheck=all -fbacktrace matrix_distribution.f90
+!     $ mpifort -g -O0 -Wall -Wextra -Wpedantic -fcheck=all -fbacktrace \
+!       matrix_distribution.f90
 !     $ mpirun -np 3 --oversubscribe ./a.out
 !
 ! Enter size 10.
@@ -56,6 +57,7 @@ program matrix_distribution
 
 contains
 
+    !---------------------------------------------------------------------------
     subroutine print_gatherv(mtx, id, n_ids, comm)
         integer,        intent(in) :: mtx(:, :), id, n_ids
         type(MPI_Comm), intent(in) :: comm
@@ -103,24 +105,7 @@ contains
         if (allocated(disps)) deallocate(disps)
         return
     end subroutine print_gatherv
-
-    ! subroutine print_barrier(mtx, id, n_ids, comm)
-    !     integer,        intent(in) :: mtx(:, :), id, n_ids
-    !     type(MPI_Comm), intent(in) :: comm
-    !     integer :: rnk, row
-
-    !     do rnk = 0, n_ids - 1
-    !         if (rnk == id) then
-    !             print "(a, i0)", "Rank ", id
-    !             do row = 1, size(mtx, dim=1)
-    !                 print "(*(i2, 2x))", mtx(row, :)
-    !             end do
-    !         end if
-    !         call MPI_Barrier(comm)
-    !     end do
-    !     return
-    ! end subroutine print_barrier
-
+    !---------------------------------------------------------------------------
     subroutine partition(id, n_ids, size, b, e)
         integer, intent(in)    :: id, n_ids, size
         integer, intent(inout) :: b, e
@@ -132,11 +117,12 @@ contains
         e =     quotient * (id + 1) + min(remainder, id + 1)
         return
     end subroutine partition
-
+    !---------------------------------------------------------------------------
     integer function get_rank(rnk, n_ids)
         integer, intent(in) :: rnk, n_ids
         get_rank = modulo(rnk, n_ids)
         return
     end function get_rank
+    !---------------------------------------------------------------------------
 
 end program matrix_distribution
