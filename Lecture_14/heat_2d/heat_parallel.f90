@@ -1,10 +1,10 @@
-! Heat transport in 2D
+! Heat transport in 2D.
 !
-! Parallelize the following serial code.
+! Parallel version of the serial code.  Run it with `-np 4`.
 !
-! $ gfortran -g -O0 -Wall -Wextra -Wpedantic -fcheck=all -fbacktrace heat_serial.f90
-! $ ./a.out < in.txt
-program heat_serial
+!     $ mpifort -g -O0 -Wall -Wextra -Wpedantic -fcheck=all -fbacktrace heat_parallel.f90
+!     $ mpirun -np 4 --oversubscribe ./a.out < in.txt
+program heat_parallel
     implicit none
     real, parameter :: alpha = 2.5e-4
     real, dimension(:, :), pointer :: prev_t, next_t, temp_t
@@ -42,4 +42,4 @@ program heat_serial
     print "(a, i0)", "Final time is ", time
     deallocate(prev_t)
     deallocate(next_t)
-end program heat_serial
+end program heat_parallel
