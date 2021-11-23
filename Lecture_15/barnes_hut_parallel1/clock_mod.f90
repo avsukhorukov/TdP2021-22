@@ -1,4 +1,5 @@
 module clock_mod
+    use :: parallel_mod
     implicit none
 
     type :: a_clock
@@ -17,9 +18,14 @@ contains
     ! - set the current time to zero;
     ! - set the cyclic time count to the cyclic lap period.
     subroutine clock_init()
-        read *, clock%step
-        read *, clock%lap
-        read *, clock%total
+        if (my_rank == ROOT_RANK) then
+            read *, clock%step
+            read *, clock%lap
+            read *, clock%total
+        end if
+        call MPI_Bcast(clock%step,  1, MPI_REAL, ROOT_RANK, comm)
+        call MPI_Bcast(clock%lap,   1, MPI_REAL, ROOT_RANK, comm)
+        call MPI_Bcast(clock%total, 1, MPI_REAL, ROOT_RANK, comm)
         clock%current = 0.0
         clock%timer   = clock%lap
         return

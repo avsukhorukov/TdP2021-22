@@ -3,8 +3,8 @@ program barnes_hut_parallel
     use :: particles_mod
     implicit none
 
+    call init_parallel()
     call clock_init()
-
     call init_bodies()
     call create_tree()
     call update_accelerations()
@@ -21,6 +21,8 @@ program barnes_hut_parallel
         call half_kick(clock%step)
         call clock_next_step()
     end do
+
     call destroy_tree()
     call destroy_bodies()
+    call finish_parallel()
 end program barnes_hut_parallel

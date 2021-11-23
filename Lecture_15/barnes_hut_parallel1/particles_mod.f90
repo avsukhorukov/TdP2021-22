@@ -1,5 +1,7 @@
 module particles_mod
+    use :: parallel_mod
     implicit none
+
     integer, parameter :: NODE_IS_EMPTY  = 0
     integer, parameter :: NODE_IS_A_BODY = 1
     integer, parameter :: NODE_IS_A_CELL = 2
@@ -40,7 +42,7 @@ contains
         real, intent(in) :: step
         integer :: i
 
-        do i = 1, size(bodies)
+        do i = first, last
             bodies(i)%v(:) = bodies(i)%v(:) + (step / 2.0) * bodies(i)%a(:)
         end do
         return
@@ -50,34 +52,80 @@ contains
         real, intent(in) :: step
         integer :: i
 
-        do i = 1, size(bodies)
+        do i = first, last
             bodies(i)%r(:) = bodies(i)%r(:) + step * bodies(i)%v(:)
         end do
+        ! Synchronize all new coordinates.
+        call MPI_Allgatherv(bodies(first), count,         a_body_r_datatype, &
+                            bodies,        counts, disps, a_body_r_datatype, comm)
         return
     end subroutine drift
+    !---------------------------------------------------------------------------
+    subroutine create_body_datatypes()
+        integer(kind=MPI_ADDRESS_KIND) :: addrs(4), lb, extent
+        type(MPI_Datatype) :: a_tmp_body ! temporary name
+        integer :: i
+
+        call MPI_Get_address(bodies(1),   lb)
+        call MPI_Get_address(bodies(1)%m, addrs(1))
+        call MPI_Get_address(bodies(1)%r, addrs(2))
+        call MPI_Get_address(bodies(1)%v, addrs(3))
+        call MPI_Get_address(bodies(1)%a, addrs(4))
+        !call MPI_Get_address(bodies(2), extent)
+        do i = 1, 4
+            addrs(i) = MPI_Aint_diff(addrs(i), lb)
+        end do
+        !extent = MPI_Aint_diff(extent, lb)
+        ! Whole body structure.
+        call MPI_Type_create_struct(4, [1, 2, 2, 2], addrs, &
+                                    [MPI_REAL, MPI_REAL, MPI_REAL, MPI_REAL], &
+                                    a_tmp_body)
+        call MPI_Type_get_extent(a_tmp_body, lb, extent)
+        call MPI_Type_create_resized(a_tmp_body, lb, extent, a_body_datatype)
+        call MPI_Type_commit(a_body_datatype)
+        ! Only body%r component.
+        call MPI_Type_create_struct(1, [2], addrs([2]), &
+                                    [MPI_REAL], &
+                                    a_tmp_body)
+        call MPI_Type_create_resized(a_tmp_body, lb, extent, a_body_r_datatype)
+        call MPI_Type_commit(a_body_r_datatype)
+        return
+    end subroutine create_body_datatypes
     !---------------------------------------------------------------------------
     subroutine init_bodies()
         integer :: nbodies, i
 
-        read *, nbodies
-        print *, nbodies
+        if (my_rank == ROOT_RANK) then
+            read *, nbodies
+            print *, nbodies
+        end if
+        call MPI_Bcast(nbodies, 1, MPI_INTEGER, ROOT_RANK, comm)
         allocate(bodies(nbodies))
-        do i = 1, nbodies
-            read *, bodies(i)%m, bodies(i)%r(:), bodies(i)%v(:)
-        end do
+        if (my_rank == ROOT_RANK) then
+            do i = 1, nbodies
+                read *, bodies(i)%m, bodies(i)%r(:), bodies(i)%v(:)
+            end do
+        end if
+        call create_body_datatypes()
+        call MPI_Bcast(bodies, nbodies, a_body_datatype, ROOT_RANK, comm)
+        call partition(nbodies) ! find `first` and `last` indices.
         return
     end subroutine init_bodies
     !---------------------------------------------------------------------------
     subroutine destroy_bodies()
         if (allocated(bodies)) deallocate(bodies)
+        call MPI_Type_free(a_body_datatype)
+        call MPI_Type_free(a_body_r_datatype)
         return
     end subroutine destroy_bodies
     !---------------------------------------------------------------------------
     subroutine print_coordinates()
         integer :: i
-        do i = 1, size(bodies)
-            print "(2(es11.3, 1x))", bodies(i)%r(:)
-        end do
+        if (my_rank == ROOT_RANK) then
+            do i = 1, size(bodies)
+                print "(2(es11.3, 1x))", bodies(i)%r(:)
+            end do
+        end if
     end subroutine print_coordinates
     !---------------------------------------------------------------------------
     ! Get dimensions of the square bounding box that circumscribes all the
@@ -253,7 +301,7 @@ contains
     subroutine update_accelerations()
         integer :: i
 
-        do i = 1, size(bodies)
+        do i = first, last
             bodies(i)%a(:) = acceleration_body_tree(bodies(i), tree)
         end do
     end subroutine update_accelerations
