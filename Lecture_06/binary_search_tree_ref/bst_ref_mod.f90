@@ -95,4 +95,48 @@ contains
         return
     end function bst_has
 
+
+    ! Homework -----------------------------------------------------------------
+
+    ! Homework: non-recursive version of `bst_search()`.
+    function bst_search_nonrec(tree, val) result(current)
+        type(a_bst_ref), pointer            :: current
+        type(a_bst_ref), target, intent(in) :: tree
+        integer,                 intent(in) :: val
+
+        current => tree
+        do
+            if (.not.associated(current%ref)) exit ! is null()
+            if (current%ref%val == val) then       ! found
+                exit
+            else if (val < current%ref%val) then
+                current => current%ref%left
+            else ! (current%ref%val <= val)
+                current => current%ref%right
+            end if
+        end do
+        return
+    end function bst_search_nonrec
+
+    ! Homework: non-recursive version of `bst_insert`.
+    recursive subroutine bst_insert_nonrec(tree, val)
+        type(a_bst_ref), target, intent(inout) :: tree
+        integer,                 intent(in)    :: val
+        type(a_bst_ref), pointer :: current
+
+        current => tree
+        do while (associated(current%ref))
+            if (val < current%ref%val) then
+                current => current%ref%left
+            else
+                current => current%ref%right
+            end if
+        end do
+        allocate(current%ref)
+        current%ref%val       =  val
+        current%ref%left%ref  => null()
+        current%ref%right%ref => null()
+        return
+    end subroutine bst_insert_nonrec
+
 end module bst_ref_mod

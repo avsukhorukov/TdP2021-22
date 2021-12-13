@@ -1,3 +1,5 @@
+! TODO: don't put this in a separate module, students think they do different
+! thigs.  Better keep all the stack functionalities in one single module.
 module sorted_stack_mod
     implicit none
     
@@ -41,12 +43,12 @@ contains
 
         allocate(temp)
         temp%val = val
-        ! Start searching for the current node to insert before it.
-        previous => null()
-        current  => stack%head
         if (sorted_stack_is_empty(stack)) then
             stack%head => temp
         else ! stack is not empty
+            ! Start searching for the current node to insert before it.
+            previous => null()
+            current  => stack%head
             next_node: do while (associated(current))
                 if (current%val < val) then ! advance by one node
                     previous => current
@@ -64,6 +66,38 @@ contains
         end if
         return
     end subroutine sorted_stack_insert
+
+    ! Other way of inserting elements in the sorted order, using three branches
+    ! instead of two with the search in the last one.
+    subroutine sorted_stack_insert2(stack, val)
+        type(a_sorted_stack), intent(inout) :: stack
+        integer,              intent(in)    :: val
+        !
+        type(a_sll_node), pointer :: temp, current
+
+        allocate(temp)
+        temp%val = val
+        if (sorted_stack_is_empty(stack)) then
+            stack%head => temp
+        else ! stack is not empty
+            if (val < stack%head%val) then ! insert before the 1st item
+                temp%next => stack%head
+                stack%head => temp
+            else ! insert after the 1st item
+                current => stack%head
+                next_item: do while(associated(current%next))
+                    if (val >= current%next%val) then ! advance by on item
+                        current => current%next
+                    else
+                        exit next_item
+                    end if
+                end do next_item
+                temp%next => current%next
+                current%next => temp
+            end if
+        end if
+        return
+    end subroutine sorted_stack_insert2
 
     ! Recursive insertion.  Observe that we must use the head pointer component
     ! and not the stack structure as the last one is not recursive.  The right
@@ -129,13 +163,10 @@ contains
         return
     end subroutine sorted_stack_remove
 
-    !---------------------------------------------------------------------------
-    ! Homework:
-
     ! Recursive remove.  Observe that we must use the head pointer component
     ! and not the stack structure as the last one is not recursive.  The right
     ! way would be to wrap pointers into a derived-type ref for a pointer-to-
-    ! pointer technique, which we will show how to use later.
+    ! pointer technique.
     !
     ! The base of recursion is the empty head.  Here it is needed explicitly
     ! even if you check for the emptiness before calling this subroutine,
@@ -143,8 +174,25 @@ contains
     ! stack is not empty, then you either remove the 1st element (no recursion)
     ! for val = head%val or you remove recursively from the remaining part of
     ! the stack.
-    !---------------------------------------------------------------------------
+    recursive subroutine sorted_stack_remove_rec(head, val)
+        type(a_sll_node), pointer, intent(inout) :: head
+        integer,                   intent(in)    :: val
+        !
+        type(a_sll_node), pointer :: temp
 
+        if (.not.associated(head)) then ! nothing to remove
+            return
+        else if (val < head%val) then ! the value is before the 1st node
+            return
+        else if (val == head%val) then ! the value is in the 1st node
+            temp => head
+            head => head%next
+            deallocate(temp)
+        else ! val > head%val, is in the remaining part of the stack
+            call sorted_stack_remove_rec(head%next, val)
+        end if
+        return
+    end subroutine sorted_stack_remove_rec
 
     subroutine sorted_stack_display(stack)
         type(a_sorted_stack), intent(in) :: stack

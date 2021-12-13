@@ -51,9 +51,10 @@ contains
             deque%tail%next => temp
             deque%tail => temp
         else
-            ! The two cases of val <= head.val and tail.val < val exclude the
-            ! one-node case when head == tail, so in this else-branch we always
-            ! have at least one interval between head and tail.
+            ! Here at least one interval between the head and tail is present
+            ! so as head ≠ tail because the two previous cases of val <=
+            ! head.val and tail.val < val exclude the one-node case, when head
+            ! == tail.
             left  => deque%head
             right => deque%tail
             do while (.not.associated(left%next, right)) ! until one interval is left
@@ -67,21 +68,54 @@ contains
         return
     end subroutine sorted_deque_insert
 
+    subroutine sorted_deque_remove(deque, val)
+        type(a_sorted_deque), intent(inout) :: deque
+        integer,              intent(in)    :: val
+        type(a_dll_node), pointer :: current
 
-    !---------------------------------------------------------------------------
-    ! Homework (hard):
-    !
-    ! sorted_deque_remove(deque, val)
-    ! --- remove a node from a sorted deque for the given value.
-    !---------------------------------------------------------------------------
+        ! Deque is empty?
+        if (.not.associated(deque%head)) return
+        ! Val is outside the deque range?
+        if (val < deque%head%val .or. deque%tail%val < val) return
+        ! If the sorted deque has only one item, then this item's value is
+        ! exactly `val`, which we must delete.  The head and tail must be
+        ! nullified for an empty deque that remains.
+        if (associated(deque%head, deque%tail)) then
+            deallocate(deque%head)
+            deque%tail => null()
+        else
+            ! Otherwise the deque has at least two items.  Move the current
+            ! pointer from the head forward until val <= current%val.  If val is
+            ! not in the deque, then the current pointer will skip it so as
+            ! val < current%val.  The current item will never be disassociated
+            ! because of the previous range check.
+            current => deque%head
+            do while (current%val < val)
+                current => current%next
+            end do
+            ! If current%val is val then delete the current item.
+            if (current%val == val) then
+                if (associated(current, deque%head)) then        ! the head item
+                    current%next%prev => current%prev
+                    deque%head => current%next
+                else if (associated(current, deque%tail)) then   ! the tail item
+                    current%prev%next => current%next
+                    deque%tail => current%prev
+                else                                ! nor head neither tail item
+                    current%next%prev => current%prev
+                    current%prev%next => current%next
+                end if
+                deallocate(current)
+            end if
+        end if
+        return
+    end subroutine sorted_deque_remove
 
-    !---------------------------------------------------------------------------
-    ! Homework (simple):
-    !
-    ! sorted_deque_push_front(deque, val)
-    ! sorted_deque_push_back(deque, val)
-    ! sorted_deque_pop_back(deque) ! function
-    !---------------------------------------------------------------------------
+    ! Not implemented so far, because we insert and delete nodes in the sorted
+    ! oder:
+    ! - push_front
+    ! - push_back
+    ! - pop_back
 
     integer function sorted_deque_pop_front(deque)
         type(a_sorted_deque), intent(inout) :: deque

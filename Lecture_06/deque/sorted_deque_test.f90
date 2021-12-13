@@ -17,15 +17,14 @@ program sorted_deque_test
 
     call sorted_deque_display(deque)
 
-! Homework:
-!    print "(a)", "Values to delete, one per line:"
-!    do
-!        read(*, *, iostat=iostatus) val
-!        if (iostatus /= 0) exit
-!        if (sorted_deque_is_empty(deque)) exit
-!        call sorted_deque_remove(deque, val)
-!        call sorted_deque_display(deque)
-!    end do
+    print "(a)", "Values to delete, one per line:"
+    do
+        read(*, *, iostat=iostatus) val
+        if (iostatus /= 0) exit
+        if (sorted_deque_is_empty(deque)) exit
+        call sorted_deque_remove(deque, val)
+        call sorted_deque_display(deque)
+    end do
 
     call sorted_deque_destroy(deque)
 end program sorted_deque_test

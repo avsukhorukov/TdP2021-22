@@ -3,7 +3,7 @@
 ! are given as module procedures:
 ! - stack_init (nullify both pointers);
 ! - stack_is_empty (test for null head);
-! - stack_push (append to the tail);
+! - stack_push (append to the head;
 ! - stack_pop (remove from the head);
 ! - stack_display (walk and print values).
 module stack_mod
